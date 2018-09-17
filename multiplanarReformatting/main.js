@@ -24,8 +24,26 @@ var MultiplanarReformattingPlugin = class MultiplanarReformattingPlugin extends 
             displaySet = OHIF.plugins.ViewportPlugin.getDisplaySet(viewportIndex);
         }
 
+        const volumeViewer = vtk.Rendering.Misc.vtkGenericRenderWindow.newInstance({
+          background: [200, 0, 0],
+        });
+
+        const renderWindow = volumeViewer.getRenderWindow();
+        const renderer = volumeViewer.getRenderer();
+
+        const renderCallback = () => {
+          console.warn('renderCallback');
+
+          const interactor = renderWindow.getInteractor();
+
+          console.warn(interactor);
+          //debugger;
+
+          interactor.requestAnimation(interactor);
+        };
+
         const { VTKUtils } = window;
-        const imageDataObject = VTKUtils.getImageData(displaySet);
+        const imageDataObject = VTKUtils.getImageData(displaySet, renderCallback);
         const imageData = imageDataObject.vtkImageData;
 
         div.innerHTML = '';
@@ -57,10 +75,6 @@ var MultiplanarReformattingPlugin = class MultiplanarReformattingPlugin extends 
 
         */
 
-        const volumeViewer = vtk.Rendering.Misc.vtkGenericRenderWindow.newInstance({
-            background: [0, 0, 0],
-        });
-
         volumeViewer.setContainer(div);
 
         // TODO: VTK's canvas currently does not fill the viewport element
@@ -71,10 +85,8 @@ var MultiplanarReformattingPlugin = class MultiplanarReformattingPlugin extends 
         volumeViewer.resize();
 
         const actor = MultiplanarReformattingPlugin.setupVTKActor(imageData);
-        const renderer = volumeViewer.getRenderer();
-        const renderWindow = volumeViewer.getRenderWindow();
 
-        renderer.addVolume(actor);
+        renderer.addActor(actor);
 
         const scanDirection = imageDataObject.orientation;
         if (!viewDirection) {
@@ -83,7 +95,8 @@ var MultiplanarReformattingPlugin = class MultiplanarReformattingPlugin extends 
         }
 
         const { MPR, ohifInteractorStyleSlice } = VTKUtils;
-        const mode = MPR.computeSlicingMode(scanDirection, viewDirection);        const imageMapper = actor.getMapper();
+        const mode = MPR.computeSlicingMode(scanDirection, viewDirection);
+        const imageMapper = actor.getMapper();
 
         console.warn(imageData);
         imageMapper.setInputData(imageData);

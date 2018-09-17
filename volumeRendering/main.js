@@ -19,15 +19,28 @@ var VolumeRenderingPlugin = class VolumeRenderingPlugin extends OHIF.plugins.Vie
             displaySet = OHIF.plugins.ViewportPlugin.getDisplaySet(viewportIndex);
         }
 
+
+        const volumeViewer = vtk.Rendering.Misc.vtkGenericRenderWindow.newInstance({
+          background: [0, 0, 0],
+        });
+
+        const renderWindow = volumeViewer.getRenderWindow();
+        const renderer = volumeViewer.getRenderer();
+
+
+        const renderCallback = () => {
+          console.warn('renderCallback VTK');
+
+          const interactor = renderWindow.getInteractor();
+
+          interactor.requestAnimation(interactor);
+        }
+
         const { VTKUtils } = window;
-        const imageDataObject = VTKUtils.getImageData(displaySet);
+        const imageDataObject = VTKUtils.getImageData(displaySet, renderCallback);
         const imageData = imageDataObject.vtkImageData;
 
         div.innerHTML = '';
-
-        const volumeViewer = vtk.Rendering.Misc.vtkGenericRenderWindow.newInstance({
-            background: [0, 0, 0],
-        });
 
         volumeViewer.setContainer(div);
 
